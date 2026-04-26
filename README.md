@@ -75,6 +75,7 @@ Scalability
 High availability
 Performance
 --------------------
+```
 #archeticture of project:
 project/
 ├── main.tf
@@ -97,7 +98,7 @@ project/
 │       └── outputs.tf
 └── user_data/
     └── install_app.sh
-
+```
     -----------------------------------------
     
 #diagram :
