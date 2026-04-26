@@ -74,3 +74,40 @@ Security
 Scalability
 High availability
 Performance
+--------------------
+#archeticture of project:
+project/
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── terraform.tfvars          ← production
+├── dev.tfvars                ← development
+├── modules/
+│   ├── networking/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── compute/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   └── monitoring/
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+└── user_data/
+    └── install_app.sh
+
+    -----------------------------------------
+    
+#diagram :
+
+<img width="1595" height="1215" alt="manara_task" src="https://github.com/user-attachments/assets/5b244aa6-5916-4870-99c1-561aaa78c5cd" />
+------------------------
+#output:
+
+<img width="2549" height="1374" alt="Screenshot 2026-04-26 175624" src="https://github.com/user-attachments/assets/0e376813-6012-438e-94e1-0895f83d3381" />
+-------------------
+vedio:
+
+
