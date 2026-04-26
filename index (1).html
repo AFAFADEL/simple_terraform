@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serverless App — AWS Lab</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0A1628;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .container { max-width: 600px; width: 100%; }
+    h1 { color: #FF9900; font-size: 32px; margin-bottom: 8px; }
+    .subtitle { color: #A0C4E0; margin-bottom: 32px; font-size: 15px; }
+    .card {
+      background: #152340;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+      border-left: 4px solid #0D7EA2;
+    }
+    .card h2 { color: #0D7EA2; font-size: 18px; margin-bottom: 12px; }
+    .card p  { color: #8BACC8; font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #1E4D8C;
+      background: #0A1628;
+      color: white;
+      font-size: 14px;
+      outline: none;
+    }
+    input:focus { border-color: #FF9900; }
+    button {
+      background: #FF9900;
+      color: #0A1628;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    button:hover { background: #FFB84D; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    .result {
+      background: #0A1628;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 13px;
+      min-height: 48px;
+      color: #87CEEB;
+      border: 1px solid #1E3A5A;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .result.error { color: #FF6B6B; border-color: #4A1010; }
+    .result.success { color: #5DCB8A; }
+    .badge {
+      display: inline-block;
+      background: #1E4D8C;
+      color: #A0C4E0;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .arch {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .arch-step {
+      background: #1E3A5A;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #8ECAE6;
+    }
+    .arch-arrow { color: #FF9900; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Serverless Web App</h1>
+    <p class="subtitle">AWS Lab — S3 + API Gateway + Lambda</p>
+
+    <div class="card">
+      <h2>Call Your Lambda Function</h2>
+      <p>Enter your name and click the button. The request goes to API Gateway → Lambda → returns a response.</p>
+      <div class="input-row">
+        <input type="text" id="nameInput" placeholder="Enter your name..." value="Ahmed"/>
+        <button id="callBtn" onclick="callAPI()">Call API</button>
+      </div>
+      <div class="result" id="result">Waiting for API call...</div>
+      <div class="arch">
+        <span class="arch-step">Browser</span>
+        <span class="arch-arrow">→</span>
+        <span class="arch-step">API Gateway</span>
+        <span class="arch-arrow">→</span>
+        <span class="arch-step">Lambda</span>
+        <span class="arch-arrow">→</span>
+        <span class="arch-step">JSON Response</span>
+      </div>
+    </div>
+
+    <div class="card" style="border-left-color: #7C3AED;">
+      <h2 style="color: #7C3AED;">Upload a File to S3</h2>
+      <p>Select a file. Lambda generates a Presigned URL and the file uploads directly to S3.</p>
+      <div class="input-row">
+        <input type="file" id="fileInput" style="padding: 6px;"/>
+        <button onclick="uploadFile()" style="background:#7C3AED; color:white;">Upload</button>
+      </div>
+      <div class="result" id="uploadResult">Select a file to upload...</div>
+    </div>
+
+    <div style="text-align:center; margin-top: 8px;">
+      <span class="badge">Hosted on S3 Static Website</span>
+      <span class="badge" style="margin-left:6px;">Lambda: Free Tier</span>
+      <span class="badge" style="margin-left:6px;">No servers running</span>
+    </div>
+  </div>
+
+  <script>
+    // ── REPLACE THIS WITH YOUR API GATEWAY URL ──────────────────────────────
+    const API_URL = "https://YOUR-API-ID.execute-api.us-east-1.amazonaws.com/default";
+    // ────────────────────────────────────────────────────────────────────────
+
+    async function callAPI() {
+      const name = document.getElementById('nameInput').value.trim() || 'World';
+      const btn  = document.getElementById('callBtn');
+      const out  = document.getElementById('result');
+
+      btn.disabled = true;
+      btn.textContent = 'Calling...';
+      out.className = 'result';
+      out.textContent = 'Sending request to Lambda...';
+
+      try {
+        const res  = await fetch(`${API_URL}/hello?name=${encodeURIComponent(name)}`);
+        const data = await res.json();
+        out.className = 'result success';
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.className = 'result error';
+        out.textContent = 'Error: ' + err.message + '\n\nMake sure you replaced API_URL in this file.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Call API';
+      }
+    }
+
+    async function uploadFile() {
+      const file = document.getElementById('fileInput').files[0];
+      const out  = document.getElementById('uploadResult');
+      if (!file) { out.textContent = 'No file selected.'; return; }
+
+      out.className = 'result';
+      out.textContent = 'Getting presigned URL from Lambda...';
+
+      try {
+        const res  = await fetch(`${API_URL}/presign?filename=${encodeURIComponent(file.name)}&type=${encodeURIComponent(file.type)}`);
+        const data = await res.json();
+        if (!data.url) throw new Error('No presigned URL returned');
+        out.textContent = 'Uploading to S3...';
+        await fetch(data.url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+        out.className = 'result success';
+        out.textContent = 'Upload successful!\nFile: ' + file.name + '\nSize: ' + (file.size/1024).toFixed(1) + ' KB';
+      } catch (err) {
+        out.className = 'result error';
+        out.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    document.getElementById('nameInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') callAPI();
+    });
+  </script>
+</body>
+</html>
