@@ -1,0 +1,54 @@
+🎓 Lab 2 Summary (as a student)
+
+In this lab, I built a serverless web application on AWS without using any servers like EC2.
+
+The idea is:
+
+The frontend (index.html) is hosted on S3 (static website)
+When the user interacts with the page, requests go to API Gateway
+API Gateway triggers a Lambda function (Python)
+Lambda processes the request and returns a response
+🧱 What I built
+S3 Website Bucket
+Hosts the website (index.html)
+Public so anyone can open it in the browser
+S3 Data Bucket
+Private bucket for file uploads
+Not accessible directly (for security)
+Lambda Function
+/hello → returns a message like "Hello, Afaf!"
+/presign → generates a presigned URL for uploading files
+API Gateway
+Connects the frontend with Lambda
+Has routes:
+/hello
+/presign
+🔁 How the flow works
+User opens the website from S3
+Clicks "Call API" → request goes to /hello → Lambda returns JSON
+For upload:
+Frontend calls /presign
+Lambda returns a temporary upload URL
+Browser uploads the file directly to S3
+🧠 Key concept I learned
+
+Lambda does NOT upload files.
+It only gives permission (presigned URL), and the browser uploads directly to S3.
+
+This makes the system:
+
+Faster 🚀
+Cheaper 💰
+Scalable 🔥
+⚠️ Common issues I faced
+Failed to fetch → CORS مشكلة
+No presigned URL → wrong response key
+Upload failed → bucket name or permissions issue
+✅ Final result
+Website opens without AWS login
+API works and returns data
+File upload works
+Files are stored securely in a private S3 bucket
+💡 Final thought (as a student)
+
+This lab helped me understand how to build a full backend using AWS services without managing servers, and how services like S3, Lambda, and API Gateway work together.
